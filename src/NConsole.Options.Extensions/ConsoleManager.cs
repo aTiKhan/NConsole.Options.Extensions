@@ -8,8 +8,14 @@ namespace NConsole.Options
     /// <summary>
     /// ConsoleManager class.
     /// </summary>
+    /// <inheritdoc />
     public class ConsoleManager : IDisposable
     {
+        /// <summary>
+        /// &quot;h|help&quot;
+        /// </summary>
+        public const string DefaultHelpPrototype = "h|help";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleManager"/> class using
         /// a specified value for HelpInfo prototype and description.
