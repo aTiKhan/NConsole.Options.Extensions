@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors>Michael W. Powell</Authors>
     <Company>Kingdom Software</Company>
-    <Product>NConsole.Options</Product>
+    <Product>NConsole.Options.Extensions</Product>
     <Copyright>Copyright (c) 2013, 2019</Copyright>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
@@ -13,9 +13,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageProjectUrl>http://github.com/mwpowellhtx/NConsole.Options</PackageProjectUrl>
-    <!--<PackageLicense>https://github.com/mwpowellhtx/NConsole.Options/blob/master/LICENSE</PackageLicense>-->
-    <PackageLicenseUrl>https://github.com/mwpowellhtx/NConsole.Options/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/mwpowellhtx/NConsole.Options.Extensions</PackageProjectUrl>
+    <!--<PackageLicense>https://github.com/mwpowellhtx/NConsole.Options.Extensions/blob/master/LICENSE</PackageLicense>-->
+    <PackageLicenseUrl>https://github.com/mwpowellhtx/NConsole.Options.Extensions/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <PropertyGroup>
