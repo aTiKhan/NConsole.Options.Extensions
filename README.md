@@ -7,24 +7,22 @@ command line arguments.
 
 ## Code Organization
 
-In general, the library itself depends on there being an [OptionSet]
-(https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
+In general, the library itself depends on there being an [OptionSet](https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
 instance available. The library does not enforce ways for you to organize your code.
-However, I would strongly encourage you to adopt a [S.O.L.I.D.]
-(http://en.wikipedia.org/wiki/SOLID_%28object-oriented_design%29),
+However, I would strongly encourage you to adopt a [S.O.L.I.D.](http://en.wikipedia.org/wiki/SOLID_%28object-oriented_design%29),
 [D.R.Y.](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself) approach. Which means
 you necessarily separate the concerns of options, parsing, etc, from the rest of your
 application. However, this topic is beyond the scope of this repository.
 
 ## Driving Motivations
 
-The chief driving motivation for me was to deliver this into a [.NET Standard]
-(https://docs.microsoft.com/en-us/dotnet/standard/net-standard) environment.
+The chief driving motivation for me was to deliver this into a [.NET Standard](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)
+environment.
 
 ## The Basics
 
-This library is exactly what it says it is: an Extension to the [NConsole.Options]
-(https://github.com/mwpowellhtx/NConsole.Options) library. So if you are unfamiliar
+This library is exactly what it says it is: an Extension to the [NConsole.Options](https://github.com/mwpowellhtx/NConsole.Options)
+library. So if you are unfamiliar
 with Options, you should get familiar with that first. You can do that by installing
 Extensions, or just run with Options, at your discretion.
 
@@ -33,18 +31,15 @@ fluent-style variable-completion for command-line options.
 
 ## OptionSet and RequiredValuesOptionSet
 
-Extensions builds upon the (by now) familiar [OptionSet]
-(https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
+Extensions builds upon the (by now) familiar [OptionSet](https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
 in its purest form. Additionally, it is possible to add required values using the
 [RequiredValuesOptionSet](https://github.com/mwpowellhtx/NConsole.Options.Extensions/blob/master/src/NConsole.Options.Extensions/RequiredValuesOptionSet.cs)
-Extension to [OptionSet]
-(https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs).
+Extension to [OptionSet](https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs).
 
 ## Adding Variables
 
 There are several ways to add variables to support simple variables. Let's assume that
-we have the following [OptionSet]
-(https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
+we have the following [OptionSet](https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
 available:
 
 ```C#
@@ -221,16 +216,12 @@ There you go. I practically handed you your production usage right there.
 ## Roadmap
 
 I welcome ideas and ways to improve upon the extensibility of
-[NConsole.Options.Extensions]
-(https://github.com/mwpowellhtx/NConsole.Options.Extensions). At present, plausible
-areas of extension and/or improvement include, but are not limited to:
+[NConsole.Options.Extensions](https://github.com/mwpowellhtx/NConsole.Options.Extensions).
+At present, plausible areas of extension and/or improvement include, but are not limited to:
 
-- [ ] In its present condition, I am of the opinion that [OptionSet]
-(https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
-should be supporting the behavior introduced by [RequiredValuesOptionSet]
-(https://github.com/mwpowellhtx/NConsole.Options.Extensions/blob/master/src/NConsole.Options.Extensions/RequiredValuesOptionSet.cs),
-especially considering the existence of [OptionValueType]
-(https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionValueType.cs).
+- [ ] In its present condition, I am of the opinion that [OptionSet](https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionSet.cs)
+should be supporting the behavior introduced by [RequiredValuesOptionSet](https://github.com/mwpowellhtx/NConsole.Options.Extensions/blob/master/src/NConsole.Options.Extensions/RequiredValuesOptionSet.cs),
+especially considering the existence of [OptionValueType](https://github.com/mwpowellhtx/NConsole.Options/blob/master/src/NConsole.Options/OptionValueType.cs).
 
 - [ ] I am considering refactoring strategic domain level constant definitions to
 the [NConsole.Options](https://github.com/mwpowellhtx/NConsole.Options) API as well.
@@ -238,7 +229,6 @@ Especially in areas where we are basically repeating ourselves from the root sou
 code.
 
 - [ ] I am pretty confident with the conferred type conversion provided by
-[NConsole.Options]
-(https://github.com/mwpowellhtx/NConsole.Options) at this point. I am of the mindset
-that less of this is necessary, if at all, from an [NConsole.Options.Extensions]
-(https://github.com/mwpowellhtx/NConsole.Options.Extensions) perspective.
+[NConsole.Options](https://github.com/mwpowellhtx/NConsole.Options) at this point.
+I am of the mindset that less of this is necessary, if at all, from an
+[NConsole.Options.Extensions](https://github.com/mwpowellhtx/NConsole.Options.Extensions) perspective.
