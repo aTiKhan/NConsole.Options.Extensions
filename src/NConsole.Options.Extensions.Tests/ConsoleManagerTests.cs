@@ -4,7 +4,10 @@ namespace NConsole.Options
 {
     using Xunit;
     using Xunit.Abstractions;
- 
+    using static Domain;
+    using static ConsoleManager;
+    using static Constants;
+
     /// <summary>
     /// ConsoleManager tests.
     /// </summary>
@@ -26,20 +29,18 @@ namespace NConsole.Options
             // Populate the OptionSet with some nominal options.
 
             // ReSharper disable UnusedVariable
-            var name = optionSet.AddRequiredVariable<string>("n");
-            var age = optionSet.AddRequiredVariable<int>("a");
-            var age2 = optionSet.AddRequiredVariable<int>("b");
-            var age3 = optionSet.AddRequiredVariable<int>("c");
+            var name = optionSet.AddRequiredVariable<string>(en);
+            var age = optionSet.AddRequiredVariable<int>(ay);
+            var age2 = optionSet.AddRequiredVariable<int>(bee);
+            var age3 = optionSet.AddRequiredVariable<int>(cee);
             // ReSharper restore UnusedVariable
 
-            const string ConsoleName = "Test";
-
-            using (var consoleManager = new ConsoleManager(ConsoleName, optionSet))
+            using (var consoleManager = new ConsoleManager(Tests, optionSet))
             {
                 using (var writer = new StringWriter())
                 {
                     consoleManager.TryParseOrShowHelp(writer).AssertFalse();
-                    writer.ToString().AssertContains(ConsoleName + ": error parsing arguments:");
+                    writer.ToString().AssertContains($"{Tests}: error parsing arguments:");
                 }
             }
         }
@@ -55,19 +56,17 @@ namespace NConsole.Options
             // Populate the OptionSet with some nominal options.
 
             // ReSharper disable UnusedVariable
-            var n = optionSet.AddRequiredVariableList<string>("n");
-            var a = optionSet.AddRequiredVariableList<int>("a");
-            var m = optionSet.AddRequiredVariableList<string>("m");
+            var n = optionSet.AddRequiredVariableList<string>(en);
+            var a = optionSet.AddRequiredVariableList<int>(ay);
+            var m = optionSet.AddRequiredVariableList<string>(em);
             // ReSharper restore UnusedVariable
 
-            const string ConsoleName = "Test";
-
-            using (var consoleManager = new ConsoleManager(ConsoleName, optionSet))
+            using (var consoleManager = new ConsoleManager(Tests, optionSet))
             {
                 using (var writer = new StringWriter())
                 {
                     consoleManager.TryParseOrShowHelp(writer).AssertFalse();
-                    writer.ToString().AssertContains(ConsoleName + ": error parsing arguments:");
+                    writer.ToString().AssertContains($"{Tests}: error parsing arguments:");
                 }
             }
         }
@@ -83,18 +82,15 @@ namespace NConsole.Options
             // Add a non-required variable because we want to verify the help-arg.
 
             // ReSharper disable once UnusedVariable
-            var name = optionSet.AddVariable<string>("n");
+            var name = optionSet.AddVariable<string>(en);
 
             // TODO: TBD: may define canned internal constants...
-            const string HelpPrototype = "h|help";
-            const string Description = "TESTMODE";
-
-            using (var consoleManager = new ConsoleManager("Test", optionSet, HelpPrototype, Description))
+            using (var consoleManager = new ConsoleManager(Tests, optionSet, DefaultHelpPrototype, TESTMODE))
             {
                 using (var writer = new StringWriter())
                 {
-                    consoleManager.TryParseOrShowHelp(writer, HelpPrototype).AssertFalse();
-                    writer.ToString().AssertContains(Description);
+                    consoleManager.TryParseOrShowHelp(writer, DefaultHelpPrototype).AssertFalse();
+                    writer.ToString().AssertContains(TESTMODE);
                 }
             }
         }
@@ -110,19 +106,17 @@ namespace NConsole.Options
             // This one can be a required-variable, no problem, but that's it.
 
             // ReSharper disable once UnusedVariable
-            var name = optionSet.AddRequiredVariable<string>("n");
+            var name = optionSet.AddRequiredVariable<string>(en);
 
-            const string ConsoleName = "Test";
-
-            using (var consoleManager = new ConsoleManager(ConsoleName, optionSet))
+            using (var consoleManager = new ConsoleManager(Tests, optionSet))
             {
                 // Then we should have some remaining args.
-                var args = "-n ThisIsName UnknownOptionCausesErrorShowHelp".Split(' ');
+                var args = $"{Dash}{en} {ThisIsName} {UnknownOptionCausesErrorShowHelp}".Split(' ');
 
                 using (var writer = new StringWriter())
                 {
                     consoleManager.TryParseOrShowHelp(writer, args).AssertFalse();
-                    writer.ToString().AssertContains(ConsoleName + ": error parsing arguments:");
+                    writer.ToString().AssertContains($"{Tests}: error parsing arguments:");
                 }
             }
         }

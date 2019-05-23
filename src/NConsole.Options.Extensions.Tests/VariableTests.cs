@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace NConsole.Options
 {
     using Xunit;
     using Xunit.Abstractions;
+    using static Constants;
+    using static Domain;
 
     /// <summary>
     /// Variable tests.
@@ -26,19 +27,20 @@ namespace NConsole.Options
             var options = new OptionSet();
 
             // TODO: TBD: consider refactoring to more of an arrange/act/assert pattern, helper methods, etc.
-            var name = options.AddVariable<string>("n");
-            var age = options.AddVariable<int>("a");
+            var name = options.AddVariable<string>(en);
+            var age = options.AddVariable<int>(ay);
 
             /* TODO: The splitskies are clever, but are also error prone. We're assuming
              * by this that the string is as it appears at the command line, when this is
              * not the case. This is as the text appears after the command line parser is
              * through presenting the args to the application. */
-            var args = "-n FindThisString -a:23".Split(' ');
+            var args = $"{Dash}{en} {FindThisString} {Dash}{ay}{Colon}{D}".SplitArgumentMashUp();
+
             options.Parse(args);
 
             // TODO: TBD: may also verify Variable<>.Equals(Variable<>)...
-            age.Value.AssertEqual(23);
-            name.Value.AssertEqual("FindThisString");
+            age.Value.AssertEqual(D);
+            name.Value.AssertEqual(FindThisString);
         }
 
         /// <summary>
@@ -49,22 +51,23 @@ namespace NConsole.Options
         {
             var options = new RequiredValuesOptionSet();
 
-            var name = options.AddRequiredVariable<string>("n");
+            var name = options.AddRequiredVariable<string>(en);
 
             // ReSharper disable UnusedVariable
-            var age = options.AddRequiredVariable<int>("a");
-            var age2 = options.AddRequiredVariable<int>("b");
-            var age3 = options.AddRequiredVariable<int>("c");
+            var age = options.AddRequiredVariable<int>(ay);
+            var age2 = options.AddRequiredVariable<int>(bee);
+            var age3 = options.AddRequiredVariable<int>(cee);
             // ReSharper restore UnusedVariable
 
             //TODO: Screaming for NUnit-test-case-coverage.
-            var args = "-n FindThisString".Split(' ');
+            var args = $"{Dash}{en} {FindThisString}".SplitArgumentMashUp();
+
             options.Parse(args);
 
             /* TODO: Might could (should) also verify that each of the missing ones,
              * as well as found ones, are either there are not there. */
             options.GetMissingVariables().Count().AssertEqual(3);
-            name.Value.AssertEqual("FindThisString");
+            name.Value.AssertEqual(FindThisString);
         }
 
         /// <summary>
@@ -75,12 +78,14 @@ namespace NConsole.Options
         {
             var options = new RequiredValuesOptionSet();
 
-            var n = options.AddRequiredVariableList<string>("n");
-            var a = options.AddRequiredVariableList<int>("a");
-            var m = options.AddRequiredVariableList<string>("m");
+            var n = options.AddRequiredVariableList<string>(en);
+            var a = options.AddRequiredVariableList<int>(ay);
+            var m = options.AddRequiredVariableList<string>(em);
 
             //TODO: Screaming for an NUnit-test-case-coverage.
-            var args = "-n FindThisString -n:Findit2 -n:Findit3 -a2 -a3 -a5565 -a:23".Split(' ');
+            var args = ($"{Dash}{en} {FindThisString}"
+                        + $" {Dash}{en}{Colon}{Findit2} {Dash}{en}{Colon}{Findit3}"
+                        + $" {Dash}{ay}{A} {Dash}{ay}{B} {Dash}{ay}{C} {Dash}{ay}{Colon}{D}").SplitArgumentMashUp();
 
             options.Parse(args);
 
@@ -90,21 +95,21 @@ namespace NConsole.Options
             // ReSharper disable PossibleMultipleEnumeration
             void VerifyN(IEnumerable<string> x)
             {
-                x.AssertContainsAll("FindThisString", "Findit2", "Findit3").Count().AssertEqual(3);
+                x.AssertContainsAll(FindThisString, Findit2, Findit3).Count().AssertEqual(3);
             }
             // ReSharper restore PossibleMultipleEnumeration
 
             // ReSharper disable PossibleMultipleEnumeration
             void VerifyA(IEnumerable<int> x)
             {
-                x.AssertContainsAll(2, 3, 5565, 23).Count().AssertEqual(4);
+                x.AssertContainsAll(A, B, C, D).Count().AssertEqual(4);
             }
             // ReSharper restore PossibleMultipleEnumeration
 
             // ReSharper disable PossibleMultipleEnumeration
             void VerifyM(IEnumerable<string> x)
             {
-                x.Count().AssertEqual(0);
+                x.AssertEmpty();
                 options.GetMissingVariables().Count().AssertEqual(1);
             }
             // ReSharper restore PossibleMultipleEnumeration
@@ -127,11 +132,11 @@ namespace NConsole.Options
         {
             var options = new OptionSet();
 
-            var n = options.AddSwitch("n");
-            var a = options.AddSwitch("a");
-            var b = options.AddSwitch("b");
+            var n = options.AddSwitch(en);
+            var a = options.AddSwitch(ay);
+            var b = options.AddSwitch(bee);
 
-            var args = "-n -a".Split(' ');
+            var args = $"{Dash}{en} {Dash}{ay}".SplitArgumentMashUp();
 
             options.Parse(args);
 
@@ -159,11 +164,13 @@ namespace NConsole.Options
             var optionSet = new OptionSet();
 
             // ReSharper disable UnusedVariable
-            var n = optionSet.AddVariable<string>("n");
+            var n = optionSet.AddVariable<string>(en);
             // ReSharper restore UnusedVariable
 
             //TODO: Screaming for an NUnit-test-case-coverage.
-            var args = "-n:Noah -n:Moses -n:David".Split(' ');
+            var args = ($"{Dash}{en}{Colon}{Noah}"
+                        + $" {Dash}{en}{Colon}{Moses}"
+                        + $" {Dash}{en}{Colon}{David}").SplitArgumentMashUp();
 
             // Which, to XUnit, "not throwing" is simply allowing the "normal" execution path to resolve itself.
             optionSet.Parse(args);
@@ -177,25 +184,27 @@ namespace NConsole.Options
         {
             var optionSet = new OptionSet();
 
-            var n = optionSet.AddVariableList<string>("n");
-            var a = optionSet.AddVariableList<int>("a");
+            var n = optionSet.AddVariableList<string>(en);
+            var a = optionSet.AddVariableList<int>(ay);
 
             //TODO: Screaming for an NUnit-test-case-coverage.
-            var args = "-n FindThisString -n:Findit2 -n:Findi3 -a2 -a3 -a5565 -a:23".Split(' ');
+            var args = ($"{Dash}{en} {FindThisString}"
+                        + $" {Dash}{en}{Colon}{Findit2} {Dash}{en}{Colon}{Findit3}"
+                        + $" {Dash}{ay}{A} {Dash}{ay}{B} {Dash}{ay}{C} {Dash}{ay}{Colon}{D}").SplitArgumentMashUp();
 
             optionSet.Parse(args);
 
             // ReSharper disable PossibleMultipleEnumeration
             void VerifyA(IEnumerable<int> x)
             {
-                x.AssertContainsAll(23).Count().AssertEqual(4);
+                x.AssertContainsAll(D).Count().AssertEqual(4);
             }
             // ReSharper restore PossibleMultipleEnumeration
 
             // ReSharper disable PossibleMultipleEnumeration
             void VerifyN(IEnumerable<string> x)
             {
-                x.AssertContainsAll("FindThisString").Count().AssertEqual(3);
+                x.AssertContainsAll(FindThisString).Count().AssertEqual(3);
             }
             // ReSharper restore PossibleMultipleEnumeration
 
@@ -216,7 +225,7 @@ namespace NConsole.Options
 
             // TODO: TBD: does it make sense to expose "Separators" to would-be callers?
             // TODO: TBD: that is, apart from the prototype specification itself...
-            var n = optionSet.AddVariableMatrix<string>("n");
+            var n = optionSet.AddVariableMatrix<string>(en);
 
             // ReSharper disable CommentTypo
             /* Specify the args as an array instead of the splitskies, in particular
@@ -226,22 +235,22 @@ namespace NConsole.Options
 
             // Remember, the Default Pairwise Separator is the Comma (',').
             var args = GetRange(
-                "-n:Hello,World"
-                , "-nColor=Red"
-                , "-n:Message,Hello With Spaces"
-                , "-n:Name,Jesus"
-                , "-nFavNHL:NewJerseyDevils"
+                $"{Dash}{en}{Colon}{Hello}{Comma}{World}"
+                , $"{Dash}{en}{Color}{Equal}{Red}"
+                , $"{Dash}{en}{Colon}{Message}{Comma}{Hello} {With} {Spaces}"
+                , $"{Dash}{en}{Colon}{Name}{Comma}{Yeshua}"
+                , $"{Dash}{en}{FavNHL}{Colon}{NewJerseyDevils}"
             );
 
-            optionSet.Parse(args.Select(a => "-" + a.Trim()).ToArray());
+            optionSet.Parse(args.Select(a => $"{Dash}{a.Trim()}").ToArray());
 
             // This runs dangerously close to testing the Options themselves.
             void Verify(IDictionary<string, string> x)
             {
-                x.AssertContainsKeys("Name", "Hello", "Message")
-                    .AssertDoesNotContainsKeys("Color", "FavNHL")
-                    .AssertContains("Name", "Jesus")
-                    .AssertContains("Hello", "World");
+                x.AssertContainsKeys(Name, Hello, Message)
+                    .AssertDoesNotContainsKeys(Color, FavNHL)
+                    .AssertContains(Name, Yeshua)
+                    .AssertContains(Hello, World);
             }
 
             Verify(n);

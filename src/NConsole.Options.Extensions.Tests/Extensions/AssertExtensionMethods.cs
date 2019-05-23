@@ -29,6 +29,22 @@ namespace NConsole.Options
             return actual;
         }
 
+        public static IEnumerable<T> AssertEmpty<T>(this IEnumerable<T> actual)
+        {
+            // ReSharper disable PossibleMultipleEnumeration
+            Assert.Empty(actual);
+            return actual;
+            // ReSharper restore PossibleMultipleEnumeration
+        }
+
+        public static IEnumerable<T> AssertNotEmpty<T>(this IEnumerable<T> actual)
+        {
+            // ReSharper disable PossibleMultipleEnumeration
+            Assert.NotEmpty(actual);
+            return actual;
+            // ReSharper restore PossibleMultipleEnumeration
+        }
+
         public static string AssertContains(this string actual, string expected, StringComparison comparison = CurrentCultureIgnoreCase)
         {
             Assert.Contains(expected, actual, comparison);
