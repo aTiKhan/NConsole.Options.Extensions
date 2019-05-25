@@ -2,221 +2,183 @@ using System;
 
 namespace NConsole.Options
 {
+    using static Domain;
     using static String;
 
     /// <summary>
-    /// OptionSetExtensions class.
+    /// <see cref="OptionSet"/> extension methods.
     /// </summary>
     public static class OptionSetExtensionMethods
     {
+        private static OptionCallback GetDefaultSimpleOptionCallback() => () => { };
+
         /// <summary>
-        /// Adds a Switch to the OptionSet.
+        /// Adds a <see cref="Switch"/> to the <see cref="OptionSet"/>.
         /// </summary>
-        /// <typeparam name="TOptionSet">Any derived OptionSet.</typeparam>
-        /// <param name="optionSet"></param>
+        /// <param name="options"></param>
         /// <param name="prototype"></param>
+        /// <param name="callback"></param>
         /// <param name="description"></param>
-        /// <returns>The Switch associated with the OptionSet.</returns>
-        public static Switch AddSwitch<TOptionSet>(this TOptionSet optionSet
-            , string prototype, string description = null)
-            where TOptionSet : OptionSet
+        /// <returns>The <see cref="Switch"/> associated with the <paramref name="options"/>.</returns>
+        public static Switch AddSwitch(this OptionSet options, string prototype
+            , OptionCallback callback, string description = null)
         {
             /* Switch and not a flag. Switch implies on or off, enabled or disabled,
              * whereas flag implies combinations, masking. */
-            var @switch = new Switch();
+            var result = new Switch();
 
-            if (description == null)
+            options.Add(prototype, description, () =>
             {
-                // Which leaves us injecting a hook into the options.
-                optionSet.Add(prototype, () => @switch.Enabled = true);
-            }
-            else
-            {
-                // Which leaves us injecting a hook into the options.
-                optionSet.Add(prototype, description, () => @switch.Enabled = true);
-            }
+                result.Enabled = true;
+                callback?.Invoke();
+            });
 
-            // Kinda like having a future, not quite, but real close.
-            return @switch;
+            // Return the near-future Switch instance.
+            return result;
         }
 
         /// <summary>
-        /// Adds a strongly typed Variable to the OptionSet.
+        /// Adds a <see cref="Switch"/> to the <see cref="OptionSet"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="optionSet"></param>
+        /// <param name="options"></param>
         /// <param name="prototype"></param>
         /// <param name="description"></param>
-        /// <returns>The Variable associated with the OptionSet.</returns>
-        public static Variable<T> AddVariable<T>(this OptionSet optionSet
-            , string prototype, string description = null)
-        {
-            // We pass an empty method to the addedEventHandler because we don't need anything extra.
-            return description == null
-                ? AddVariable<T>(optionSet, prototype, _ => { })
-                : AddVariable<T>(optionSet, prototype, _ => { }, description);
-        }
+        /// <returns>The <see cref="Switch"/> associated with the <paramref name="options"/>.</returns>
+        public static Switch AddSwitch(this OptionSet options, string prototype, string description = null)
+            => AddSwitch(options, prototype, GetDefaultSimpleOptionCallback(), description);
+
+        private static OptionCallback<T> GetDefaultTargetOptionCallback<T>() => _ => { };
 
         /// <summary>
-        /// Adds a strongly typed Variable to the OptionSet with the option to execute arbitrary
-        /// code when options are parsed.
+        /// Adds a strongly typed <see cref="Variable{T}"/> to the <paramref name="options"/>
+        /// with the option to execute arbitrary code when arguments are parsed.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="optionSet"></param>
+        /// <param name="options"></param>
         /// <param name="prototype"></param>
-        /// <param name="onAdded">Allows execution of arbitrary code when an option is parsed.</param>
+        /// <param name="callback"></param>
         /// <param name="description"></param>
-        /// <returns>The Variable associated with the OptionSet.</returns>
-        internal static Variable<T> AddVariable<T>(this OptionSet optionSet
-            , string prototype, Action<string> onAdded, string description = null)
+        /// <returns>The <see cref="Variable{T}"/> associated with the <paramref name="options"/>.</returns>
+        internal static Variable<T> AddVariable<T>(this OptionSet options, string prototype
+            , OptionCallback<T> callback, string description = null)
         {
-            // TODO: TBD: promote Action<string> (or whatever) to first class type...
-            // TODO: TBD: I think we might even be able to let the OptionSet/Option do the type conversion for us...
-            // TODO: TBD: such that all that remains is really to introduce a really (I mean, REALLY) thin vernier over the OptionSet.
+            // TODO: TBD: but really and truly, why are we mucking around with optional/required at this level? It is such an inherent part of the prototype, just let the user handle that part
+            // TODO: TBD: while this library focuses on simply wrapping the concerns in variable, variable list, variable matrix, and so on, consequences be damned...
+            // TODO: TBD: should expose bits like `=' and `:' from the NConsole.Options Domain assets...
+            prototype = prototype.AppendRequiredOrOptional(Equal);
 
-            var variablePrototype = prototype + "=";
+            var result = new Variable<T>(prototype);
 
-            var variable = new Variable<T>(variablePrototype);
-
-            if (description == null)
+            options.Add<T>(prototype, description, x =>
             {
-                optionSet.Add(variablePrototype, x =>
-                {
-                    variable.Value = Variable<T>.CastString(x);
-                    // Perform whatever our downstream callers need to do when an option is parsed.
-                    onAdded(variablePrototype);
-                });
-            }
-            else
-            {
-                optionSet.Add(variablePrototype, description, x =>
-                {
-                    variable.Value = Variable<T>.CastString(x);
-                    // Perform whatever our downstream callers need to do when an option is parsed.
-                    onAdded(variablePrototype);
-                });
-            }
+                result.Value = x;
+                callback(x);
+            });
 
-            return variable;
+            // Return with the near-future Variable instance.
+            return result;
         }
 
         /// <summary>
-        /// Accumulates option values in a strongly-typed Variable list.
+        /// Adds a strongly-typed <see cref="Variable{T}"/> to the <paramref name="options"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="optionSet"></param>
+        /// <param name="options"></param>
         /// <param name="prototype"></param>
+        /// <param name="description"></param>
+        /// <returns>The <see cref="Variable{T}"/> associated with the <paramref name="options"/>.</returns>
+        public static Variable<T> AddVariable<T>(this OptionSet options, string prototype, string description = null)
+            => AddVariable(options, prototype, GetDefaultTargetOptionCallback<T>(), description);
+
+        /// <summary>
+        /// Accumulates option values in a strongly-typed <see cref="VariableList{T}"/> with
+        /// the <see cref="Option"/> to execute arbitrary code when arguments are parsed.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="options"></param>
+        /// <param name="prototype"></param>
+        /// <param name="callback">Allows execution of arbitrary code when an argument is parsed.</param>
         /// <param name="description"></param>
         /// <returns></returns>
         /// <returns>The VariableList associated with the OptionSet.</returns>
-        public static VariableList<T> AddVariableList<T>(this OptionSet optionSet
-            , string prototype, string description = null)
-        {
-            // We pass nothing to the addedEventHandler because we don't need anything extra.
-            return description == null
-                ? AddVariableList<T>(optionSet, prototype, none => { })
-                : AddVariableList<T>(optionSet, prototype, none => { }, description);
-        }
-
-        /// <summary>
-        /// Accumulates option values in a strongly-typed Variable list with the option to execute
-        /// arbitrary code when options are parsed.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="optionSet"></param>
-        /// <param name="prototype"></param>
-        /// <param name="onAdded">Allows execution of arbitrary code when an option is parsed.</param>
-        /// <param name="description"></param>
-        /// <returns></returns>
-        /// <returns>The VariableList associated with the OptionSet.</returns>
-        internal static VariableList<T> AddVariableList<T>(this OptionSet optionSet
-            , string prototype, Action<string> onAdded, string description = null)
+        internal static VariableList<T> AddVariableList<T>(this OptionSet options, string prototype
+            , OptionCallback<T> callback, string description = null)
         {
             // TODO: TBD: may include OptionValueType comprehension here... i.e. Required/Optional (or 'blank')...
-            var variablePrototype = prototype + "=";
+            prototype = prototype.AppendRequiredOrOptional(Equal);
 
-            var variable = new VariableList<T>(variablePrototype);
+            var result = new VariableList<T>(prototype);
 
-            // ReSharper disable InconsistentNaming
-            if (description == null)
+            options.Add<T>(prototype, description, x =>
             {
-                optionSet.Add(variablePrototype, x =>
-                {
-                    var x_Value = Variable<T>.CastString(x);
-                    variable.ValuesList.Add(x_Value);
+                result.InternalValues.Add(x);
+                callback(x);
+            });
 
-                    // Perform whatever our downstream callers need to do when an option is parsed.
-                    onAdded(variablePrototype);
-                });
-            }
-            else
-            {
-                optionSet.Add(variablePrototype, description, x =>
-                {
-                    var x_Value = Variable<T>.CastString(x);
-                    variable.ValuesList.Add(x_Value);
-
-                    // Perform whatever our downstream callers need to do when an option is parsed.
-                    onAdded(variablePrototype);
-                });
-            }
-            // ReSharper restore InconsistentNaming
-
-            return variable;
+            // Return with the near-future Variable instance.
+            return result;
         }
 
         /// <summary>
-        /// Accumulates options into a strongly-typed VariableMatrix.
+        /// Accumulates <typeparamref name="T"/> values in a strongly-typed
+        /// <see cref="VariableList{T}"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="optionSet"></param>
+        /// <param name="options"></param>
         /// <param name="prototype"></param>
         /// <param name="description"></param>
-        /// <returns>The VariableMatrix associated with the OptionSet.</returns>
-        public static VariableMatrix<T> AddVariableMatrix<T>(this OptionSet optionSet
-            , string prototype, string description = null)
+        /// <returns></returns>
+        /// <returns>The <see cref="VariableList{T}"/> associated with the <paramref name="options"/>.</returns>
+        public static VariableList<T> AddVariableList<T>(this OptionSet options, string prototype, string description = null)
+            => AddVariableList(options, prototype, GetDefaultTargetOptionCallback<T>(), description);
+
+        private static OptionCallback<TKey, TValue> GetDefaultKeyValuePairOptionCallback<TKey, TValue>() => (_, __) => { };
+
+        /// <summary>
+        /// Accumulates <typeparamref name="T"/> into a strongly-typed
+        /// <see cref="VariableMatrix{T}"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="options"></param>
+        /// <param name="prototype"></param>
+        /// <param name="callback"></param>
+        /// <param name="description"></param>
+        /// <returns>The <see cref="VariableMatrix{T}"/> associated with the
+        /// <paramref name="options"/>.</returns>
+        public static VariableMatrix<T> AddVariableMatrix<T>(this OptionSet options, string prototype
+            , OptionCallback<string, T> callback, string description = null)
         {
             // TODO: TBD: potentially ditto: OptionValueType ...
-            var variablePrototype = prototype + ":";
+            prototype = prototype.AppendRequiredOrOptional(Colon);
 
-            var variable = new VariableMatrix<T>(variablePrototype);
+            var result = new VariableMatrix<T>(prototype);
 
-            // Key/value pairs are indeed parsed out of the args list.
-            // ReSharper disable InconsistentNaming
-            if (description == null)
+            options.Add<string, T>(prototype, description, (k, x) =>
             {
-                optionSet.Add(variablePrototype, (k, x) =>
+                if (IsNullOrEmpty(k))
                 {
-                    if (IsNullOrEmpty(k))
-                    {
-                        throw new OptionException("Name not specified", variablePrototype);
-                    }
+                    throw new OptionException("Name not specified", prototype, null);
+                }
 
-                    var x_Value = Variable<T>.CastString(x);
+                result.InternalMatrix.Add(k, x);
+                callback?.Invoke(k, x);
+            });
 
-                    // Utilize the InternalMatrix for purposes of this one.
-                    variable.InternalMatrix.Add(k, x_Value);
-                });
-            }
-            else
-            {
-                optionSet.Add(variablePrototype, description, (k, x) =>
-                {
-                    if (IsNullOrEmpty(k))
-                    {
-                        throw new OptionException("Name not specified", variablePrototype);
-                    }
-
-                    var x_Value = Variable<T>.CastString(x);
-
-                    // Utilize the InternalMatrix for purposes of this one.
-                    variable.InternalMatrix.Add(k, x_Value);
-                });
-            }
-            // ReSharper restore InconsistentNaming
-
-            return variable;
+            // Return with the near-future Variable instance.
+            return result;
         }
 
+        /// <summary>
+        /// Accumulates <typeparamref name="T"/> into a strongly-typed
+        /// <see cref="VariableMatrix{T}"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="options"></param>
+        /// <param name="prototype"></param>
+        /// <param name="description"></param>
+        /// <returns>The <see cref="VariableMatrix{T}"/> associated with the
+        /// <paramref name="options"/>.</returns>
+        public static VariableMatrix<T> AddVariableMatrix<T>(this OptionSet options, string prototype, string description = null)
+            => AddVariableMatrix(options, prototype, GetDefaultKeyValuePairOptionCallback<string, T>(), description);
     }
 }
