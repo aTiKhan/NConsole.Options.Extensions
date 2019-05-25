@@ -1,37 +1,24 @@
 namespace NConsole.Options
 {
-    /* TODO: Consider what to do with Variable, add RequiredVariable,
-     * or does that mix with the Requirement class? */
-    /// <summary>
-    /// Variable OptionItemBase class.
-    /// The last known Variable Value is recalled.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <inheritdoc />
     public class Variable<T> : OptionItemBase<T>
     {
         /// <summary>
-        /// Implicitly converts the Variable value.
+        /// Implicitly converts the <see cref="Value"/>.
         /// </summary>
-        /// <param name="variable"></param>
+        /// <param name="instance"></param>
         /// <returns></returns>
-        public static implicit operator T(Variable<T> variable)
-        {
-            return variable.Value;
-        }
+        public static implicit operator T(Variable<T> instance) => instance.Value;
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="prototype">The name of the Variable.</param>
-        public Variable(string prototype)
+        /// <inheritdoc />
+        internal Variable(string prototype)
             : base(prototype)
         {
-            Value = default(T);
         }
 
         /// <summary>
         /// Gets the Value.
         /// </summary>
-        public T Value { get; internal set; }
+        public T Value { get; internal set; } = default(T);
     }
 }

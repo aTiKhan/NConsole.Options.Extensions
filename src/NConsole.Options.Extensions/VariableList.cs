@@ -3,55 +3,31 @@ using System.Collections.Generic;
 
 namespace NConsole.Options
 {
-    /// <summary>
-    /// VariableList OptionItemBase class.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <inheritdoc cref="OptionItemBase{T}"/>
     public class VariableList<T> : OptionItemBase<T>, IEnumerable<T>
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="prototype"></param>
-        public VariableList(string prototype)
+        /// <inheritdoc />
+        internal VariableList(string prototype)
             : base(prototype)
         {
         }
 
-        //TODO: Might could transform this into an observable collection.
+        // ReSharper disable once RedundantEmptyObjectOrCollectionInitializer
         /// <summary>
-        /// Values backing field.
+        /// Gets the <see cref="List{T}"/> for Internal use.
         /// </summary>
-        private readonly List<T> _values = new List<T>();
-
-        /// <summary>
-        /// Gets the ValuesList for internal consumption.
-        /// </summary>
-        internal List<T> ValuesList
-        {
-            get { return _values; }
-        }
+        internal List<T> InternalValues { get; } = new List<T> { };
 
         /// <summary>
         /// Gets the Values.
         /// </summary>
-        public IEnumerable<T> Values
-        {
-            get { return _values; }
-        }
+        /// <see cref="InternalValues"/>
+        public IReadOnlyList<T> Values => InternalValues;
 
-        #region Enumerable Members
+        /// <inheritdoc />
+        public IEnumerator<T> GetEnumerator() => Values.GetEnumerator();
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

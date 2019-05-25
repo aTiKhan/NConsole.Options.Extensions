@@ -1,185 +1,72 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
+using System.Collections.ObjectModel;
 
 namespace NConsole.Options
 {
     /// <summary>
-    /// VariableMatrix OptionItemBase class.
+    /// We now implement <see cref="IReadOnlyDictionary{TKey,TValue}"/> which was a better fit
+    /// for the Matrix application all along. No need to worry about throwing anything, and can
+    /// fairly simply extend the internal dictionary with the latest language features.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class VariableMatrix<T> : OptionItemBase<T>, IDictionary<string, T>
+    /// <inheritdoc cref="OptionItemBase{T}"/>
+    public class VariableMatrix<T> : OptionItemBase<T>, IReadOnlyDictionary<string, T>
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="prototype"></param>
-        public VariableMatrix(string prototype)
+        /// <inheritdoc />
+        internal VariableMatrix(string prototype)
             : base(prototype)
         {
         }
 
-        /* TODO: .NET 4.5 introduces the notion of ReadOnlyDictionary.
-         * In prior framework versions we would need to roll our own. */
-        //TODO: Might could enrich the model by implementing our own custom Dictionary.
         /// <summary>
-        /// Matrix backing field.
+        /// Gets the Matrix for Internal use.
         /// </summary>
-        private readonly IDictionary<string, T> _matrix = new Dictionary<string, T>();
+        internal IDictionary<string, T> InternalMatrix { get; } = new Dictionary<string, T>();
 
         /// <summary>
-        /// Gets the Matrix.
+        /// <see cref="Matrix"/> backing field.
         /// </summary>
-        internal IDictionary<string, T> InternalMatrix
-        {
-            get { return _matrix; }
-        }
+        private IReadOnlyDictionary<string, T> _matrix;
 
-        /* TODO: Approaching .NET 4.5, use the IReadOnlyDictionary, or
-         * potentially roll our own for prior .NET framework versions. */
         /// <summary>
-        /// Gets the Matrix.
+        /// Gets the Matrix. Which really means Getting Itself.
         /// </summary>
-        public IDictionary<string, T> Matrix
-        {
-            get { return _matrix; }
-        }
-
-        #region Dictionary Members
+        public IReadOnlyDictionary<string, T> Matrix =>
+            _matrix ?? (_matrix
+                = new ReadOnlyDictionary<string, T>(InternalMatrix)
+            );
 
         /// <summary>
-        /// Throws that the VariableMatrix IsReadOnly.
-        /// </summary>
-        /// <exception cref="ReadOnlyException"></exception>
-        private static void ThrowReadOnly()
-        {
-            throw new ReadOnlyException("VariableMatrix is readonly.");
-        }
-
-        /// <summary>
-        /// Throws that the VariableMatrix IsReadOnly.
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <returns>Returns a value to keep the compiler happy.</returns>
-        /// <exception cref="ReadOnlyException"></exception>
-        private static TResult ThrowReadOnly<TResult>()
-        {
-            ThrowReadOnly();
-
-            //To keep the compiler happy.
-            return default(TResult);
-        }
-
-        /// <summary>
-        /// Runs the Dictionary Action on the Matrix.
-        /// </summary>
-        /// <param name="action"></param>
-        private void DictionaryAction(Action<IDictionary<string, T>> action)
-        {
-            action(Matrix);
-        }
-
-        /// <summary>
-        /// Runs the Dictionary Func on the Matrix.
+        /// Returns the <typeparamref name="TResult"/> given <paramref name="func"/>.
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="func"></param>
         /// <returns></returns>
-        private TResult DictionaryFunc<TResult>(Func<IDictionary<string, T>, TResult> func)
-        {
-            return func(Matrix);
-        }
+        private TResult DictionaryFunc<TResult>(Func<IReadOnlyDictionary<string, T>, TResult> func) => func(Matrix);
 
-        public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
-        {
-            return DictionaryFunc(x => x.GetEnumerator());
-        }
+        /// <inheritdoc />
+        public IEnumerator<KeyValuePair<string, T>> GetEnumerator() => DictionaryFunc(x => x.GetEnumerator());
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Add(KeyValuePair<string, T> item)
-        {
-            ThrowReadOnly();
-        }
+        /// <inheritdoc />
+        public int Count => DictionaryFunc(x => x.Count);
 
-        public void Clear()
-        {
-            ThrowReadOnly();
-        }
+        /// <inheritdoc />
+        public bool ContainsKey(string key) => DictionaryFunc(x => x.ContainsKey(key));
 
-        public bool Contains(KeyValuePair<string, T> item)
-        {
-            return DictionaryFunc(x => x.Contains(item));
-        }
+        /// <inheritdoc />
+        public bool TryGetValue(string key, out T value) => Matrix.TryGetValue(key, out value);
 
-        public void CopyTo(KeyValuePair<string, T>[] array, int arrayIndex)
-        {
-            DictionaryAction(x => x.CopyTo(array, arrayIndex));
-        }
+        /// <inheritdoc />
+        public T this[string key] => DictionaryFunc(x => x[key]);
 
-        public bool Remove(KeyValuePair<string, T> item)
-        {
-            //Keep the compiler happy, however, still it is readonly.
-            return ThrowReadOnly<bool>();
-        }
+        /// <inheritdoc />
+        public IEnumerable<string> Keys => DictionaryFunc(x => x.Keys);
 
-        public int Count
-        {
-            get { return DictionaryFunc(x => x.Count); }
-        }
-
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
-        public bool ContainsKey(string key)
-        {
-            return DictionaryFunc(x => x.ContainsKey(key));
-        }
-
-        public void Add(string key, T value)
-        {
-            ThrowReadOnly();
-        }
-
-        public bool Remove(string key)
-        {
-            return ThrowReadOnly<bool>();
-        }
-
-        public bool TryGetValue(string key, out T value)
-        {
-            var local = default(T);
-            var result = DictionaryFunc(x => x.TryGetValue(key, out local));
-            value = local;
-            return result;
-        }
-
-        public T this[string key]
-        {
-            get { return DictionaryFunc(x => x[key]); }
-            set
-            {
-                var local = value;
-                ThrowReadOnly();
-            }
-        }
-
-        public ICollection<string> Keys
-        {
-            get { return DictionaryFunc(x => x.Keys); }
-        }
-
-        public ICollection<T> Values
-        {
-            get { return DictionaryFunc(x => x.Values); }
-        }
-
-        #endregion
+        /// <inheritdoc />
+        public IEnumerable<T> Values => DictionaryFunc(x => x.Values);
     }
 }
