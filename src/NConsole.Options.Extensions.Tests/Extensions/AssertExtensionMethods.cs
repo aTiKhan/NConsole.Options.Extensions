@@ -9,6 +9,12 @@ namespace NConsole.Options
 
     internal static class AssertExtensionMethods
     {
+        public static object AssertNotSame(this object actual, object expected)
+        {
+            Assert.NotSame(expected, actual);
+            return actual;
+        }
+
         // ReSharper disable ConditionIsAlwaysTrueOrFalse
         public static bool AssertTrue(this bool actual)
         {
@@ -90,6 +96,33 @@ namespace NConsole.Options
         }
 
         public static IDictionary<TKey, TValue> AssertContains<TKey, TValue>(this IDictionary<TKey, TValue> actual, TKey expectedKey, TValue expectedValue)
+        {
+            Assert.Contains(expectedKey, actual);
+            actual[expectedKey].AssertEqual(expectedValue);
+            return actual;
+        }
+
+        public static IReadOnlyDictionary<TKey, _> AssertContainsKeys<TKey, _>(this IReadOnlyDictionary<TKey, _> actual, params TKey[] keys)
+        {
+            foreach (var key in keys)
+            {
+                Assert.Contains(key, actual);
+            }
+
+            return actual;
+        }
+
+        public static IReadOnlyDictionary<TKey, _> AssertDoesNotContainsKeys<TKey, _>(this IReadOnlyDictionary<TKey, _> actual, params TKey[] keys)
+        {
+            foreach (var key in keys)
+            {
+                Assert.DoesNotContain(key, actual);
+            }
+
+            return actual;
+        }
+
+        public static IReadOnlyDictionary<TKey, TValue> AssertContains<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> actual, TKey expectedKey, TValue expectedValue)
         {
             Assert.Contains(expectedKey, actual);
             actual[expectedKey].AssertEqual(expectedValue);
