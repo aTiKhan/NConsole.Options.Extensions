@@ -44,87 +44,6 @@ namespace NConsole.Options
         }
 
         /// <summary>
-        /// Should detect required variables.
-        /// </summary>
-        [Fact]
-        public void Should_Detect_Required_Variables()
-        {
-            var options = new RequiredValuesOptionSet();
-
-            var name = options.AddRequiredVariable<string>(en);
-
-            // ReSharper disable UnusedVariable
-            var age = options.AddRequiredVariable<int>(ay);
-            var age2 = options.AddRequiredVariable<int>(bee);
-            var age3 = options.AddRequiredVariable<int>(cee);
-            // ReSharper restore UnusedVariable
-
-            //TODO: Screaming for NUnit-test-case-coverage.
-            var args = $"{Dash}{en} {FindThisString}".SplitArgumentMashUp();
-
-            options.Parse(args);
-
-            /* TODO: Might could (should) also verify that each of the missing ones,
-             * as well as found ones, are either there are not there. */
-            options.GetMissingVariables().Count().AssertEqual(3);
-            name.Value.AssertEqual(FindThisString);
-        }
-
-        /// <summary>
-        /// Should detect required variable lists.
-        /// </summary>
-        [Fact]
-        public void Should_Detect_Required_VariableLists()
-        {
-            var options = new RequiredValuesOptionSet();
-
-            var n = options.AddRequiredVariableList<string>(en);
-            var a = options.AddRequiredVariableList<int>(ay);
-            var m = options.AddRequiredVariableList<string>(em);
-
-            //TODO: Screaming for an NUnit-test-case-coverage.
-            var args = ($"{Dash}{en} {FindThisString}"
-                        + $" {Dash}{en}{Colon}{Findit2} {Dash}{en}{Colon}{Findit3}"
-                        + $" {Dash}{ay}{A} {Dash}{ay}{B} {Dash}{ay}{C} {Dash}{ay}{Colon}{D}").SplitArgumentMashUp();
-
-            options.Parse(args);
-
-            // TODO: TBD: these verification methods should be refactored...
-            // TODO: TBD: as should the constants informing the tests themselves...
-            // TODO: TBD: especially if we are going to agree that the scenarios herein attribute a certain vocabulary for consistency sake.
-            // ReSharper disable PossibleMultipleEnumeration
-            void VerifyN(IEnumerable<string> x)
-            {
-                x.AssertContainsAll(FindThisString, Findit2, Findit3).Count().AssertEqual(3);
-            }
-            // ReSharper restore PossibleMultipleEnumeration
-
-            // ReSharper disable PossibleMultipleEnumeration
-            void VerifyA(IEnumerable<int> x)
-            {
-                x.AssertContainsAll(A, B, C, D).Count().AssertEqual(4);
-            }
-            // ReSharper restore PossibleMultipleEnumeration
-
-            // ReSharper disable PossibleMultipleEnumeration
-            void VerifyM(IEnumerable<string> x)
-            {
-                x.AssertEmpty();
-                options.GetMissingVariables().Count().AssertEqual(1);
-            }
-            // ReSharper restore PossibleMultipleEnumeration
-
-            VerifyA(a);
-            VerifyA(a.Values);
-
-            VerifyN(n);
-            VerifyN(n.Values);
-
-            VerifyM(m);
-            VerifyM(m.Values);
-        }
-
-        /// <summary>
         /// Should detect switches.
         /// </summary>
         [Fact]
@@ -161,10 +80,10 @@ namespace NConsole.Options
         [Fact]
         public void Should_Not_Throw_Exception_Multiset_Variable()
         {
-            var optionSet = new OptionSet();
+            var options = new OptionSet();
 
             // ReSharper disable UnusedVariable
-            var n = optionSet.AddVariable<string>(en);
+            var n = options.AddVariable<string>(en);
             // ReSharper restore UnusedVariable
 
             //TODO: Screaming for an NUnit-test-case-coverage.
@@ -173,7 +92,7 @@ namespace NConsole.Options
                         + $" {Dash}{en}{Colon}{David}").SplitArgumentMashUp();
 
             // Which, to XUnit, "not throwing" is simply allowing the "normal" execution path to resolve itself.
-            optionSet.Parse(args);
+            options.Parse(args);
         }
 
         /// <summary>
@@ -221,11 +140,11 @@ namespace NConsole.Options
         [Fact]
         public void Should_Process_Matrices()
         {
-            var optionSet = new OptionSet();
+            var options = new OptionSet();
 
             // TODO: TBD: does it make sense to expose "Separators" to would-be callers?
             // TODO: TBD: that is, apart from the prototype specification itself...
-            var n = optionSet.AddVariableMatrix<string>(en);
+            var n = options.AddVariableMatrix<string>(en);
 
             // ReSharper disable CommentTypo
             /* Specify the args as an array instead of the splitskies, in particular
@@ -242,16 +161,19 @@ namespace NConsole.Options
                 , $"{Dash}{en}{FavNHL}{Colon}{NewJerseyDevils}"
             );
 
-            optionSet.Parse(args.Select(a => $"{Dash}{a.Trim()}").ToArray());
+            options.Parse(args.Select(a => $"{Dash}{a.Trim()}").ToArray());
 
             // This runs dangerously close to testing the Options themselves.
-            void Verify(IDictionary<string, string> x)
+            void Verify(IReadOnlyDictionary<string, string> x)
             {
                 x.AssertContainsKeys(Name, Hello, Message)
                     .AssertDoesNotContainsKeys(Color, FavNHL)
                     .AssertContains(Name, Yeshua)
                     .AssertContains(Hello, World);
             }
+
+            // Should not be the Same instance, technically.
+            n.Matrix.AssertNotSame(n);
 
             Verify(n);
             Verify(n.Matrix);
