@@ -1,25 +1,11 @@
-using System;
-
 namespace NConsole.Options
 {
     /// <summary>
-    /// OptionItemBase class.
+    /// Variable base class.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class OptionItemBase<T>
     {
-        /// <summary>
-        /// Casts the Value string to the Type.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        /// <remarks>Note that this is a hard cast.</remarks>
-        protected internal static T CastString(string value)
-        {
-            //TODO: Might provide a hook for more explicit-user-provided string conversions.
-            return (T) Convert.ChangeType(value, typeof (T));
-        }
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -35,13 +21,14 @@ namespace NConsole.Options
         protected string Prototype { get; private set; }
 
         /// <summary>
-        /// Throws an OptionException with the Message and Prototype.
+        /// Returns a new <see cref="OptionException"/> with the <paramref name="message"/>
+        /// and <see cref="Prototype"/>.
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
         protected OptionException ThrowOptionException(string message)
         {
-            return new OptionException(message, Prototype);
+            return new OptionException(message, Prototype, null);
         }
     }
 }
