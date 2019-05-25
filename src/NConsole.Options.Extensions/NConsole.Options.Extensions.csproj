@@ -9,10 +9,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Provides extensions to NConsole.Options command line argument parsing.</Description>
-    <Version>1.4.2.25825</Version>
-    <AssemblyVersion>1.4.2.25825</AssemblyVersion>
-    <FileVersion>1.4.2.25825</FileVersion>
-    <PackageVersion>1.4.2.25825</PackageVersion>
+    <Version>1.4.2.25844</Version>
+    <AssemblyVersion>1.4.2.25844</AssemblyVersion>
+    <FileVersion>1.4.2.25844</FileVersion>
+    <PackageVersion>1.4.2.25844</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
