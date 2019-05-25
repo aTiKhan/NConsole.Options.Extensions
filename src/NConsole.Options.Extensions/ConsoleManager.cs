@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -21,41 +20,27 @@ namespace NConsole.Options
         /// a specified value for HelpInfo prototype and description.
         /// </summary>
         /// <param name="consoleName">Name of the console.</param>
-        /// <param name="optionSet">An OptionSet.</param>
+        /// <param name="options">An <see cref="OptionSet"/>.</param>
         /// <param name="helpPrototype">The Help prototype. Informs a Switch with its Prototype.</param>
         /// <param name="helpDescription">The help description.</param>
         /// <inheritdoc />
-        public ConsoleManager(string consoleName, RequiredValuesOptionSet optionSet
+        public ConsoleManager(string consoleName, RequiredValuesOptionSet options
             , string helpPrototype = "h|help", string helpDescription = "Show the help")
-            : this(optionSet, consoleName, new HelpInfo(optionSet, helpPrototype, helpDescription))
+            : this(options, consoleName, new HelpInfo(options, helpPrototype, helpDescription))
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleManager"/> class.
         /// </summary>
-        /// <param name="optionSet">An OptionSet.</param>
+        /// <param name="options">An <see cref="OptionSet"/>.</param>
         /// <param name="consoleName">Name of the console.</param>
         /// <param name="helpInfo">The help info.</param>
-        private ConsoleManager(RequiredValuesOptionSet optionSet, string consoleName, HelpInfo helpInfo)
+        private ConsoleManager(RequiredValuesOptionSet options, string consoleName, HelpInfo helpInfo)
         {
             ConsoleName = consoleName;
-            _optionSet = optionSet;
+            _options = options;
             _helpInfo = helpInfo;
-        }
-
-        /// <summary>
-        /// Requirements backin field.
-        /// </summary>
-        private readonly List<Requirement> _requirements = new List<Requirement>();
-
-        //TODO: TBD: Could potentially be an observable collection.
-        /// <summary>
-        /// Gets the Requirements.
-        /// </summary>
-        public List<Requirement> Requirements
-        {
-            get { return _requirements; }
         }
 
         /// <summary>
@@ -66,12 +51,12 @@ namespace NConsole.Options
         /// <summary>
         /// Gets the ConsoleName.
         /// </summary>
-        internal string ConsoleName { get; private set; }
+        internal string ConsoleName { get; }
 
         /// <summary>
-        /// OptionSet backing field.
+        /// Options backing field.
         /// </summary>
-        private readonly RequiredValuesOptionSet _optionSet;
+        private readonly RequiredValuesOptionSet _options;
 
         /// <summary>
         /// Parses the Command-Line Args or Shows the Help, whichever is appropriate.
@@ -85,22 +70,32 @@ namespace NConsole.Options
         /// for many in the way of helpers vanishes altogether.</remarks>
         public bool TryParseOrShowHelp(TextWriter writer, params string[] args)
         {
-            var remaining = _optionSet.Parse(args);
+            if (!_options.SilentUnprocessedOptions)
+            {
+                _options.SilentUnprocessedOptions = true;
+            }
 
-            //Not-parsed determined here.
-            var parsed = !(remaining.Any()
-                           || _optionSet.GetMissingVariables().Any()
-                           || _helpInfo.Help.Enabled);
+            var remaining = _options.Parse(args).ToArray();
 
-            //Show-error when any-remaining or missing-variables.
-            if (remaining.Any() || _optionSet.GetMissingVariables().Any())
+            // TODO: TBD: we may even want to connect with the Missing Options exception.
+            // Not-parsed determined here.
+            var parsed = !(remaining.Any() || _options.MissingOptions.Any() || _helpInfo.Help.Enabled);
+
+            // Show-error when any-remaining or missing-variables.
+            if (remaining.Any() || _options.MissingOptions.Any())
+            {
                 writer.WriteLine("{0}: error parsing arguments:", ConsoleName);
+            }
             else if (!parsed)
+            {
                 writer.WriteLine("{0} options:", ConsoleName);
+            }
 
-            //Show-help when not-parsed.
+            // Show-help when not-parsed.
             if (!parsed)
-                _optionSet.WriteOptionDescriptions(writer);
+            {
+                _options.WriteOptionDescriptions(writer);
+            }
 
             return parsed;
         }
