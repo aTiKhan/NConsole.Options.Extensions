@@ -21,7 +21,7 @@
   <PropertyGroup>
     <RootNamespace>NConsole.Options</RootNamespace>
     <XunitVersion>2.4.1</XunitVersion>
-    <NConsoleOptionsVersion>1.0.2.31569</NConsoleOptionsVersion>
+    <NConsoleOptionsVersion>1.0.3.11148</NConsoleOptionsVersion>
   </PropertyGroup>
 
   <ItemGroup>
