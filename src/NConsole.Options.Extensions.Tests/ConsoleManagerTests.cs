@@ -35,11 +35,11 @@ namespace NConsole.Options
             var age3 = options.AddVariable<int>(cee.MustSpecify());
             // ReSharper restore UnusedVariable
 
-            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
+            using (var writer = new StringWriter())
             {
-                using (var writer = new StringWriter())
+                using (var consoleManager = new OptionSetConsoleManager(Tests, writer, options))
                 {
-                    consoleManager.TryParseOrShowHelp(writer).AssertFalse();
+                    consoleManager.TryParseOrShowHelp().AssertFalse();
                     writer.ToString().AssertContains($"{Tests}: error parsing arguments:");
                 }
             }
@@ -61,11 +61,11 @@ namespace NConsole.Options
             var m = options.AddVariableList<string>(em.MustSpecify());
             // ReSharper restore UnusedVariable
 
-            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
+            using (var writer = new StringWriter())
             {
-                using (var writer = new StringWriter())
+                using (var consoleManager = new OptionSetConsoleManager(Tests, writer, options))
                 {
-                    consoleManager.TryParseOrShowHelp(writer).AssertFalse();
+                    consoleManager.TryParseOrShowHelp().AssertFalse();
                     writer.ToString().AssertContains($"{Tests}: error parsing arguments:");
                 }
             }
@@ -86,11 +86,11 @@ namespace NConsole.Options
             var requestHelp = $"{DoubleDash}{DefaultHelpPrototype[0]}";
 
             // TODO: TBD: may define canned internal constants...
-            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
+            using (var writer = new StringWriter())
             {
-                using (var writer = new StringWriter())
+                using (var consoleManager = new OptionSetConsoleManager(Tests, writer, options))
                 {
-                    consoleManager.TryParseOrShowHelp(writer, requestHelp).AssertFalse();
+                    consoleManager.TryParseOrShowHelp(requestHelp).AssertFalse();
                     writer.ToString().AssertContains(TESTMODE);
                 }
             }
@@ -109,14 +109,14 @@ namespace NConsole.Options
             // ReSharper disable once UnusedVariable
             var name = options.AddVariable<string>(en.MustSpecify());
 
-            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
-            {
-                // Then we should have some remaining args.
-                var args = $"{Dash}{en} {ThisIsName} {UnknownOptionCausesErrorShowHelp}".SplitArgumentMashUp();
+            // Then we should have some remaining args.
+            var args = $"{Dash}{en} {ThisIsName} {UnknownOptionCausesErrorShowHelp}".SplitArgumentMashUp();
 
-                using (var writer = new StringWriter())
+            using (var writer = new StringWriter())
+            {
+                using (var consoleManager = new OptionSetConsoleManager(Tests, writer, options))
                 {
-                    consoleManager.TryParseOrShowHelp(writer, args).AssertFalse();
+                    consoleManager.TryParseOrShowHelp(args).AssertFalse();
                     writer.ToString().AssertContains($"{Tests}: error parsing arguments:");
                 }
             }
