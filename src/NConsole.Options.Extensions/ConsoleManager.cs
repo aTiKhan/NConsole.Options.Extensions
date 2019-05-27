@@ -4,11 +4,12 @@ using System.Linq;
 
 namespace NConsole.Options
 {
+    using static String;
+
     /// <summary>
-    /// ConsoleManager class.
+    /// Provides basic ConsoleManager details.
     /// </summary>
-    /// <inheritdoc />
-    public class ConsoleManager : IDisposable
+    public abstract class ConsoleManager
     {
         /// <summary>
         /// &quot;h|help&quot;
@@ -16,47 +17,9 @@ namespace NConsole.Options
         public const string DefaultHelpPrototype = "h|help";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleManager"/> class using
-        /// a specified value for HelpInfo prototype and description.
+        /// &quot;Show the help&quot;
         /// </summary>
-        /// <param name="consoleName">Name of the console.</param>
-        /// <param name="options">An <see cref="OptionSet"/>.</param>
-        /// <param name="helpPrototype">The Help prototype. Informs a Switch with its Prototype.</param>
-        /// <param name="helpDescription">The help description.</param>
-        /// <inheritdoc />
-        public ConsoleManager(string consoleName, RequiredValuesOptionSet options
-            , string helpPrototype = "h|help", string helpDescription = "Show the help")
-            : this(options, consoleName, new HelpInfo(options, helpPrototype, helpDescription))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleManager"/> class.
-        /// </summary>
-        /// <param name="options">An <see cref="OptionSet"/>.</param>
-        /// <param name="consoleName">Name of the console.</param>
-        /// <param name="helpInfo">The help info.</param>
-        private ConsoleManager(RequiredValuesOptionSet options, string consoleName, HelpInfo helpInfo)
-        {
-            ConsoleName = consoleName;
-            _options = options;
-            _helpInfo = helpInfo;
-        }
-
-        /// <summary>
-        /// HelpInfo backing field.
-        /// </summary>
-        private readonly HelpInfo _helpInfo;
-
-        /// <summary>
-        /// Gets the ConsoleName.
-        /// </summary>
-        internal string ConsoleName { get; }
-
-        /// <summary>
-        /// Options backing field.
-        /// </summary>
-        private readonly RequiredValuesOptionSet _options;
+        public const string DefaultHelpDescription = "Show the help";
 
         /// <summary>
         /// Parses the Command-Line Args or Shows the Help, whichever is appropriate.
@@ -68,33 +31,94 @@ namespace NConsole.Options
         /// <returns>true when parsing was successful and no help was requested.</returns>
         /// <remarks>Which, by simplifying the model in SOLID-, DRY-style, the need
         /// for many in the way of helpers vanishes altogether.</remarks>
-        public bool TryParseOrShowHelp(TextWriter writer, params string[] args)
+        public abstract bool TryParseOrShowHelp(TextWriter writer, params string[] args);
+
+        /// <summary>
+        /// Runs the Console. Override in order to do something meaningful in response to the
+        /// Console running, and ostensibly having invoked <see cref="TryParseOrShowHelp"/>.
+        /// </summary>
+        public virtual void Run()
         {
-            if (!_options.SilentUnprocessedOptions)
+        }
+    }
+
+    /// <summary>
+    /// ConsoleManager class.
+    /// </summary>
+    /// <inheritdoc cref="ConsoleManager"/>
+    public class ConsoleManager<TOptions> : ConsoleManager, IDisposable
+        where TOptions : OptionSet
+    {
+        private Switch HelpSwitch { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConsoleManager"/> class using
+        /// a specified value for HelpInfo prototype and description.
+        /// </summary>
+        /// <param name="consoleName">Name of the console.</param>
+        /// <param name="options">An <see cref="OptionSet"/>.</param>
+        /// <param name="helpPrototype">The Help prototype. Informs a Switch with its Prototype.</param>
+        /// <param name="helpDescription">The help description.</param>
+        /// <inheritdoc />
+        public ConsoleManager(string consoleName, TOptions options
+            , string helpPrototype = DefaultHelpPrototype
+            , string helpDescription = DefaultHelpDescription)
+        {
+            ConsoleName = consoleName;
+            HelpSwitch = (Options = options).AddSwitch(helpPrototype, helpDescription);
+        }
+
+
+        /// <summary>
+        /// Gets the ConsoleName.
+        /// </summary>
+        internal string ConsoleName { get; }
+
+        /// <summary>
+        /// Gets the Options.
+        /// </summary>
+        protected TOptions Options { get; }
+
+        /// <inheritdoc />
+        public sealed override bool TryParseOrShowHelp(TextWriter writer, params string[] args)
+        {
+            var parsed = false;
+
+            TextWriter ErrorParsingArguments()
             {
-                _options.SilentUnprocessedOptions = true;
+                writer.Write($"{ConsoleName}: error parsing arguments:");
+                return writer;
             }
 
-            var remaining = _options.Parse(args).ToArray();
-
-            // TODO: TBD: we may even want to connect with the Missing Options exception.
-            // Not-parsed determined here.
-            var parsed = !(remaining.Any() || _options.MissingOptions.Any() || _helpInfo.Help.Enabled);
-
-            // Show-error when any-remaining or missing-variables.
-            if (remaining.Any() || _options.MissingOptions.Any())
+            try
             {
-                writer.WriteLine("{0}: error parsing arguments:", ConsoleName);
+                var remaining = Options.Parse(args).ToArray();
+                // ReSharper disable once InvertIf
+                if (remaining.Any())
+                {
+                    string RenderRemainingArguments() => Join(", ", remaining.Select(x => $"`{x}'"));
+                    ErrorParsingArguments().WriteLine($" {RenderRemainingArguments()}");
+                    return false;
+                }
+
+                parsed = true;
             }
-            else if (!parsed)
+            // ReSharper disable once IdentifierTypo
+            catch (UnprocessedRequiredOptionsException uroex)
             {
-                writer.WriteLine("{0} options:", ConsoleName);
+                ErrorParsingArguments();
+                HelpSwitch.Enabled = !parsed;
             }
 
-            // Show-help when not-parsed.
-            if (!parsed)
+            // ReSharper disable once InvertIf
+            if (HelpSwitch.Enabled)
             {
-                _options.WriteOptionDescriptions(writer);
+                if (parsed)
+                {
+                    writer.WriteLine($"{ConsoleName} options:");
+                }
+
+                Options.WriteOptionDescriptions(writer);
             }
 
             return parsed;
