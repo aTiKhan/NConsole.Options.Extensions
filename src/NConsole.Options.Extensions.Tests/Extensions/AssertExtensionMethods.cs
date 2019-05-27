@@ -9,6 +9,12 @@ namespace NConsole.Options
 
     internal static class AssertExtensionMethods
     {
+        public static T AssertNotNull<T>(this T obj)
+        {
+            Assert.NotNull(obj);
+            return obj;
+        }
+
         public static object AssertNotSame(this object actual, object expected)
         {
             Assert.NotSame(expected, actual);
