@@ -24,18 +24,18 @@ namespace NConsole.Options
         [Fact]
         public void Should_Respond_To_Missing_Required_Variables_With_Show_Help()
         {
-            var options = new RequiredValuesOptionSet();
+            var options = new OptionSet();
 
             // Populate the Options with some nominal options.
 
             // ReSharper disable UnusedVariable
-            var name = options.AddRequiredVariable<string>(en);
-            var age = options.AddRequiredVariable<int>(ay);
-            var age2 = options.AddRequiredVariable<int>(bee);
-            var age3 = options.AddRequiredVariable<int>(cee);
+            var name = options.AddVariable<string>(en.MustSpecify());
+            var age = options.AddVariable<int>(ay.MustSpecify());
+            var age2 = options.AddVariable<int>(bee.MustSpecify());
+            var age3 = options.AddVariable<int>(cee.MustSpecify());
             // ReSharper restore UnusedVariable
 
-            using (var consoleManager = new ConsoleManager(Tests, options))
+            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
             {
                 using (var writer = new StringWriter())
                 {
@@ -51,17 +51,17 @@ namespace NConsole.Options
         [Fact]
         public void Should_Respond_To_Missing_Required_VariableLists_With_Show_Help()
         {
-            var options = new RequiredValuesOptionSet();
+            var options = new OptionSet();
 
             // Populate the Options with some nominal options.
 
             // ReSharper disable UnusedVariable
-            var n = options.AddRequiredVariableList<string>(en);
-            var a = options.AddRequiredVariableList<int>(ay);
-            var m = options.AddRequiredVariableList<string>(em);
+            var n = options.AddVariableList<string>(en.MustSpecify());
+            var a = options.AddVariableList<int>(ay.MustSpecify());
+            var m = options.AddVariableList<string>(em.MustSpecify());
             // ReSharper restore UnusedVariable
 
-            using (var consoleManager = new ConsoleManager(Tests, options))
+            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
             {
                 using (var writer = new StringWriter())
                 {
@@ -77,19 +77,20 @@ namespace NConsole.Options
         [Fact]
         public void Should_Respond_To_Help_Arg()
         {
-            var options = new RequiredValuesOptionSet();
+            var options = new OptionSet();
 
             // Add a non-required variable because we want to verify the help-arg.
 
             // ReSharper disable once UnusedVariable
-            var name = options.AddVariable<string>(en);
+            var name = options.AddVariable<string>(en.MustSpecify(), TESTMODE);
+            var requestHelp = $"{DoubleDash}{DefaultHelpPrototype[0]}";
 
             // TODO: TBD: may define canned internal constants...
-            using (var consoleManager = new ConsoleManager(Tests, options, DefaultHelpPrototype, TESTMODE))
+            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
             {
                 using (var writer = new StringWriter())
                 {
-                    consoleManager.TryParseOrShowHelp(writer, DefaultHelpPrototype).AssertFalse();
+                    consoleManager.TryParseOrShowHelp(writer, requestHelp).AssertFalse();
                     writer.ToString().AssertContains(TESTMODE);
                 }
             }
@@ -101,17 +102,17 @@ namespace NConsole.Options
         [Fact]
         public void Show_Show_Help_For_Remaining_Args()
         {
-            var options = new RequiredValuesOptionSet();
+            var options = new OptionSet();
 
             // This one can be a required-variable, no problem, but that's it.
 
             // ReSharper disable once UnusedVariable
-            var name = options.AddRequiredVariable<string>(en);
+            var name = options.AddVariable<string>(en.MustSpecify());
 
-            using (var consoleManager = new ConsoleManager(Tests, options))
+            using (var consoleManager = new OptionSetConsoleManager(Tests, options))
             {
                 // Then we should have some remaining args.
-                var args = $"{Dash}{en} {ThisIsName} {UnknownOptionCausesErrorShowHelp}".Split(' ');
+                var args = $"{Dash}{en} {ThisIsName} {UnknownOptionCausesErrorShowHelp}".SplitArgumentMashUp();
 
                 using (var writer = new StringWriter())
                 {

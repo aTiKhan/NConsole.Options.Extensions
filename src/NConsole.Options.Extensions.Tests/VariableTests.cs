@@ -142,9 +142,7 @@ namespace NConsole.Options
         {
             var options = new OptionSet();
 
-            // TODO: TBD: does it make sense to expose "Separators" to would-be callers?
-            // TODO: TBD: that is, apart from the prototype specification itself...
-            var n = options.AddVariableMatrix<string>(en);
+            var n = options.AddVariableMatrix<string>(en.MaySpecify());
 
             // ReSharper disable CommentTypo
             /* Specify the args as an array instead of the splitskies, in particular
@@ -161,7 +159,7 @@ namespace NConsole.Options
                 , $"{Dash}{en}{FavNHL}{Colon}{NewJerseyDevils}"
             );
 
-            options.Parse(args.Select(a => $"{Dash}{a.Trim()}").ToArray());
+            options.Parse(args.Select(x => $"{Dash}{x.Trim()}").ToArray());
 
             // This runs dangerously close to testing the Options themselves.
             void Verify(IReadOnlyDictionary<string, string> x)
