@@ -59,14 +59,8 @@ namespace NConsole.Options
         /// <param name="callback"></param>
         /// <param name="description"></param>
         /// <returns>The <see cref="Variable{T}"/> associated with the <paramref name="options"/>.</returns>
-        internal static Variable<T> AddVariable<T>(this OptionSet options, string prototype
-            , OptionCallback<T> callback, string description = null)
+        internal static Variable<T> AddVariable<T>(this OptionSet options, string prototype, OptionCallback<T> callback, string description = null)
         {
-            // TODO: TBD: but really and truly, why are we mucking around with optional/required at this level? It is such an inherent part of the prototype, just let the user handle that part
-            // TODO: TBD: while this library focuses on simply wrapping the concerns in variable, variable list, variable matrix, and so on, consequences be damned...
-            // TODO: TBD: should expose bits like `=' and `:' from the NConsole.Options Domain assets...
-            prototype = prototype.AppendRequiredOrOptional(Equal);
-
             var result = new Variable<T>(prototype);
 
             options.Add<T>(prototype, description, x =>
@@ -101,12 +95,8 @@ namespace NConsole.Options
         /// <param name="description"></param>
         /// <returns></returns>
         /// <returns>The VariableList associated with the OptionSet.</returns>
-        internal static VariableList<T> AddVariableList<T>(this OptionSet options, string prototype
-            , OptionCallback<T> callback, string description = null)
+        internal static VariableList<T> AddVariableList<T>(this OptionSet options, string prototype, OptionCallback<T> callback, string description = null)
         {
-            // TODO: TBD: may include OptionValueType comprehension here... i.e. Required/Optional (or 'blank')...
-            prototype = prototype.AppendRequiredOrOptional(Equal);
-
             var result = new VariableList<T>(prototype);
 
             options.Add<T>(prototype, description, x =>
@@ -145,12 +135,8 @@ namespace NConsole.Options
         /// <param name="description"></param>
         /// <returns>The <see cref="VariableMatrix{T}"/> associated with the
         /// <paramref name="options"/>.</returns>
-        public static VariableMatrix<T> AddVariableMatrix<T>(this OptionSet options, string prototype
-            , OptionCallback<string, T> callback, string description = null)
+        public static VariableMatrix<T> AddVariableMatrix<T>(this OptionSet options, string prototype, OptionCallback<string, T> callback, string description = null)
         {
-            // TODO: TBD: potentially ditto: OptionValueType ...
-            prototype = prototype.AppendRequiredOrOptional(Colon);
-
             var result = new VariableMatrix<T>(prototype);
 
             options.Add<string, T>(prototype, description, (k, x) =>

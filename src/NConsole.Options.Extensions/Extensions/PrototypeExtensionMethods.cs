@@ -9,11 +9,6 @@ namespace NConsole.Options
 
     public static class PrototypeExtensionMethods
     {
-        internal static string AppendRequiredOrOptional(this string prototype, char requiredOrOptional)
-            => !IsNullOrEmpty(prototype) && $"{Colon}{Equal}".Contains(prototype.Last())
-                ? prototype
-                : $"{prototype}{requiredOrOptional}";
-
         // TODO: TBD: these might even make sense in the NConsole.Options package...
         /// <summary>
         /// Appends <paramref name="actualRequiredOrOptional"/> to <paramref name="prototype"/>
