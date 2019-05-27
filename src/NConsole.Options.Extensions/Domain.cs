@@ -4,6 +4,13 @@
     public static class Domain
     {
         /// <summary>
+        /// &quot;:=&quot;
+        /// </summary>
+        /// <see cref="Colon"/>
+        /// <see cref="Equal"/>
+        internal static readonly string RequiredOrOptional = $"{Colon}{Equal}";
+
+        /// <summary>
         /// &apos;,&apos;
         /// </summary>
         internal const char Comma = ',';
