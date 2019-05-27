@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace NConsole.Options
 {
+    using static Console;
     using static String;
 
     /// <summary>
@@ -11,6 +12,21 @@ namespace NConsole.Options
     /// </summary>
     public abstract class ConsoleManager
     {
+        protected TextWriter Writer { get; }
+
+        protected TextWriter ErrorWriter { get; }
+
+        protected ConsoleManager(TextWriter writer, TextWriter errorWriter = null)
+        {
+            Writer = writer ?? Out;
+            ErrorWriter = errorWriter ?? Error;
+        }
+
+        /// <summary>
+        /// Gets the Levels.
+        /// </summary>
+        protected ErrorLevelCollection Levels { get; set; } = new ErrorLevelCollection {DefaultErrorLevel};
+
         /// <summary>
         /// &quot;h|help&quot;
         /// </summary>
@@ -26,20 +42,29 @@ namespace NConsole.Options
         /// Appropriateness is determined by whether there are Remaining Args, or
         /// whether the Help option was specified.
         /// </summary>
-        /// <param name="writer"></param>
         /// <param name="args"></param>
         /// <returns>true when parsing was successful and no help was requested.</returns>
         /// <remarks>Which, by simplifying the model in SOLID-, DRY-style, the need
         /// for many in the way of helpers vanishes altogether.</remarks>
-        public abstract bool TryParseOrShowHelp(TextWriter writer, params string[] args);
+        public abstract bool TryParseOrShowHelp(params string[] args);
+
+        /// <summary>
+        /// 0
+        /// </summary>
+        public const int DefaultErrorLevel = 0;
 
         /// <summary>
         /// Runs the Console. Override in order to do something meaningful in response to the
         /// Console running, and ostensibly having invoked <see cref="TryParseOrShowHelp"/>.
+        /// After you have configured the <see cref="Levels"/>, then call Base <see cref="Run"/>
+        /// first in order to rule out any pre-determined <paramref name="errorLevel"/>
+        /// conditions. After that, your overriden Run method may do whatever else it must.
         /// </summary>
-        public virtual void Run()
-        {
-        }
+        /// <param name="errorLevel">An Error Level of Zero (0) is healthy, all systems go.</param>
+        /// <see cref="TryParseOrShowHelp"/>
+        /// <see cref="Levels"/>
+        /// <see cref="DefaultErrorLevel"/>
+        public virtual void Run(out int errorLevel) => errorLevel = Levels.FirstOrDefault(x => x)?.ErrorLevel ?? DefaultErrorLevel;
     }
 
     /// <summary>
@@ -56,13 +81,16 @@ namespace NConsole.Options
         /// a specified value for HelpInfo prototype and description.
         /// </summary>
         /// <param name="consoleName">Name of the console.</param>
+        /// <param name="writer">The Writer which to use for normal reports.</param>
         /// <param name="options">An <see cref="OptionSet"/>.</param>
         /// <param name="helpPrototype">The Help prototype. Informs a Switch with its Prototype.</param>
         /// <param name="helpDescription">The help description.</param>
+        /// <param name="errorWriter">The Writer which to use for Error reports.</param>
         /// <inheritdoc />
-        public ConsoleManager(string consoleName, TOptions options
-            , string helpPrototype = DefaultHelpPrototype
-            , string helpDescription = DefaultHelpDescription)
+        public ConsoleManager(string consoleName, TextWriter writer, TOptions options
+            , string helpPrototype = DefaultHelpPrototype, string helpDescription = DefaultHelpDescription
+            , TextWriter errorWriter = null)
+            : base(writer, errorWriter)
         {
             ConsoleName = consoleName;
             HelpSwitch = (Options = options).AddSwitch(helpPrototype, helpDescription);
@@ -80,14 +108,14 @@ namespace NConsole.Options
         protected TOptions Options { get; }
 
         /// <inheritdoc />
-        public sealed override bool TryParseOrShowHelp(TextWriter writer, params string[] args)
+        public sealed override bool TryParseOrShowHelp(params string[] args)
         {
             var parsed = false;
 
             TextWriter ErrorParsingArguments()
             {
-                writer.Write($"{ConsoleName}: error parsing arguments:");
-                return writer;
+                Writer.Write($"{ConsoleName}: error parsing arguments:");
+                return Writer;
             }
 
             try
@@ -115,10 +143,10 @@ namespace NConsole.Options
             {
                 if (parsed)
                 {
-                    writer.WriteLine($"{ConsoleName} options:");
+                    Writer.WriteLine($"{ConsoleName} options:");
                 }
 
-                Options.WriteOptionDescriptions(writer);
+                Options.WriteOptionDescriptions(Writer);
             }
 
             return parsed;
