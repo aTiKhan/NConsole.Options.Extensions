@@ -164,10 +164,11 @@ namespace NConsole.Options
             // This runs dangerously close to testing the Options themselves.
             void Verify(IReadOnlyDictionary<string, string> x)
             {
-                x.AssertContainsKeys(Name, Hello, Message)
-                    .AssertDoesNotContainsKeys(Color, FavNHL)
-                    .AssertContains(Name, Yeshua)
-                    .AssertContains(Hello, World);
+                x.Keys.AssertContainsAll(GetRange(Name, Hello, Message).ToArray());
+                x.Keys.AssertDoesNotContainAny(GetRange(Color, FavNHL).ToArray());
+
+                x.AssertContains(y => y.Key == Name && y.Value == Yeshua);
+                x.AssertContains(y => y.Key == Hello && y.Value == World);
             }
 
             // Should not be the Same instance, technically.

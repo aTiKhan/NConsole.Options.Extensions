@@ -32,7 +32,9 @@
         /// <param name="prototype"></param>
         /// <param name="expectedPrototype"></param>
         /// <see cref="MaySpecifyPrototypeTestCases"/>
-        [Theory, ClassData(typeof(MaySpecifyPrototypeTestCases))]
+        [Theory
+            , ClassData(typeof(MaySpecifyPrototypeTestCases))
+            ]
         public void MaySpecify_Prototye_Correct(string prototype, string expectedPrototype)
             => VerifyPrototypeSpecification(prototype, expectedPrototype, p => p.MaySpecify());
 
@@ -43,7 +45,9 @@
         /// <param name="prototype"></param>
         /// <param name="expectedPrototype"></param>
         /// <see cref="MustSpecifyPrototypeTestCases"/>
-        [Theory, ClassData(typeof(MustSpecifyPrototypeTestCases))]
+        [Theory
+            , ClassData(typeof(MustSpecifyPrototypeTestCases))
+            ]
         public void MustSpecify_Prototye_Correct(string prototype, string expectedPrototype)
             => VerifyPrototypeSpecification(prototype, expectedPrototype, p => p.MustSpecify());
     }
