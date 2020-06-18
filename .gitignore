@@ -2,3 +2,6 @@
 bin/
 obj/
 packages/
+
+# ignoring intermediate licensing artifacts
+LICENSE.txt
